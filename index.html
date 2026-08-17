@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RS&amp;H — A/HMU Organizational Maintenance Shop Space Dashboard</title>
+<style>
+:root{
+  --rsh-blue:#215eac;--rsh-golden:#febc11;--rsh-plum:#a1225d;--rsh-green:#0ba89c;
+  --rsh-light-blue:#85c7ee;--rsh-navy:#103254;--rsh-dark-gray:#415465;--rsh-light-gray:#a8a6a8;
+  --rsh-golden-tint:#fce9c4;--rsh-blue-tint-1:#b7dbf4;--rsh-blue-tint-2:#d7eaf9;
+  --rsh-gradient:linear-gradient(45deg,#215eac 0%,#0ba89c 50%,#febc11 85%,#fce9c4 100%);
+  --bg:#eef1f5;--surface:#ffffff;--surface-2:#f5f7fa;--border:#d9dfe8;--border-strong:#c2cad7;
+  --text:#28323f;--muted:#6c7889;
+  --font:'Segoe UI',system-ui,-apple-system,'Helvetica Neue',sans-serif;
+  --mono:ui-monospace,'Cascadia Code','Consolas','SFMono-Regular',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+.tnum{font-variant-numeric:tabular-nums;font-feature-settings:'tnum';}
+.gradient-rule{height:4px;background:var(--rsh-gradient);}
+.app-header{background:var(--rsh-navy);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 26px;}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;position:relative;}
+.menu-wrap{position:relative;display:flex;align-items:center;}
+.menu-btn{width:34px;height:34px;border-radius:6px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.10);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+.menu-btn:hover{background:rgba(255,255,255,.20);}
+.menu-lines{width:16px;height:12px;display:flex;flex-direction:column;justify-content:space-between;}
+.menu-lines span{display:block;height:2px;background:#fff;border-radius:2px;}
+.export-menu{display:none;position:absolute;top:42px;left:0;z-index:1200;width:255px;background:#fff;border:1px solid var(--border);border-radius:9px;box-shadow:0 14px 34px rgba(0,0,0,.18);overflow:hidden;}
+.export-menu.open{display:block;}
+.export-menu-title{padding:10px 12px;background:var(--surface-2);border-bottom:1px solid var(--border);font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+.export-menu button{width:100%;border:none;border-bottom:1px solid var(--border);background:#fff;padding:11px 12px;text-align:left;cursor:pointer;font-family:var(--font);}
+.export-menu button:last-child{border-bottom:none;}
+.export-menu button:hover{background:var(--rsh-blue-tint-2);}
+.export-menu .menu-main{display:block;font-size:12.5px;font-weight:700;color:var(--rsh-navy);}
+.export-menu .menu-sub{display:block;font-size:10.5px;color:var(--muted);margin-top:2px;}
+.header-center{text-align:center;flex:1;min-width:0;}
+.header-center h1{font-size:16px;font-weight:600;letter-spacing:.01em;}
+.header-center p{font-size:12px;color:#b9c6d6;font-weight:400;margin-top:1px;}
+.header-right{display:flex;align-items:center;gap:10px;}
+.unit-pill{display:inline-flex;align-items:center;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);border-radius:7px;overflow:hidden;padding:2px;}
+.unit-pill button{border:none;background:transparent;color:#cdd8e6;cursor:pointer;font-family:var(--font);font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:5px;transition:all .15s;}
+.unit-pill button.active{background:#fff;color:var(--rsh-navy);}
+.info-btn{width:30px;height:30px;border-radius:6px;cursor:pointer;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);color:#fff;font-size:15px;font-weight:600;line-height:1;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;}
+.info-btn:hover{background:rgba(255,255,255,.2);}
+.project-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 26px;}
+.project-inner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.project-input{width:230px;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:9px 12px;font-family:var(--font);font-size:13.5px;color:var(--text);outline:none;}
+.project-input:focus{border-color:var(--rsh-blue);box-shadow:0 0 0 3px var(--rsh-blue-tint-2);}
+.project-details{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.project-name{font-size:14px;font-weight:700;color:var(--rsh-navy);padding-left:14px;border-left:3px solid var(--rsh-green);}
+.meta-chip{font-size:11px;font-weight:700;font-family:var(--mono);padding:3px 8px;border-radius:4px;background:var(--rsh-blue-tint-2);color:var(--rsh-blue);}
+.meta-chip.green{background:#d6f3f0;color:#0a7c73;}
+.layout{display:grid;grid-template-columns:390px 1fr;align-items:start;}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:22px;height:calc(100vh - 113px);position:sticky;top:0;overflow-y:auto;}
+.content{padding:26px 30px 60px;min-height:calc(100vh - 113px);}
+.panel-label{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--rsh-blue);margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+.sb-section{margin-bottom:24px;}
+.field{margin-bottom:13px;}
+.field-label{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12.5px;font-weight:600;color:var(--rsh-dark-gray);margin-bottom:5px;}
+.field-hint{font-size:11px;font-weight:400;color:var(--muted);}
+input[type="number"],input[type="text"],select{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:13.5px;padding:8px 10px;outline:none;transition:border-color .15s,box-shadow .15s;}
+input[type="number"]:focus,input[type="text"]:focus,select:focus{border-color:var(--rsh-blue);box-shadow:0 0 0 3px var(--rsh-blue-tint-2);}
+input[type="number"]{font-family:var(--mono);}
+select{font-weight:600;cursor:pointer;}
+.toggle-line{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;font-weight:600;color:var(--rsh-dark-gray);margin-bottom:10px;cursor:pointer;line-height:1.4;}
+.toggle-line input{width:auto;margin-top:2px;}
+.toggle-sub{display:block;font-size:10.5px;font-weight:400;color:var(--muted);margin-top:1px;}
+.comp-list{margin-top:6px;padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;}
+.comp-line{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--rsh-dark-gray);margin-bottom:6px;}
+.comp-line:last-child{margin-bottom:0;}
+.comp-line input{width:auto;}
+.comp-line .cval{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--muted);white-space:nowrap;}
+.small-btn{border:1px solid var(--border-strong);background:var(--surface);color:var(--rsh-navy);border-radius:6px;padding:7px 10px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:var(--font);}
+.small-btn:hover{border-color:var(--rsh-blue);background:var(--rsh-blue-tint-2);}
+.results-bar{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:20px;flex-wrap:wrap;}
+.results-bar h2{font-size:19px;font-weight:600;}
+.results-meta{font-family:var(--mono);font-size:12px;color:var(--muted);}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:24px;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:15px 17px;position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--rsh-blue);}
+.kpi.k-green::before{background:var(--rsh-green);}
+.kpi.k-navy::before{background:var(--rsh-navy);}
+.kpi.k-plum::before{background:var(--rsh-plum);}
+.kpi.k-gold::before{background:var(--rsh-golden);}
+.kpi-label{font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600;}
+.kpi-value{font-size:24px;font-weight:700;color:var(--rsh-blue);letter-spacing:-.01em;}
+.kpi.k-green .kpi-value{color:var(--rsh-green);}
+.kpi.k-navy .kpi-value{color:var(--rsh-navy);}
+.kpi.k-plum .kpi-value{color:var(--rsh-plum);}
+.kpi.k-gold .kpi-value{color:#c8930a;}
+.kpi-sub{font-size:11.5px;color:var(--muted);margin-top:3px;}
+.grid-2{display:grid;grid-template-columns:1.1fr 1fr;gap:22px;align-items:start;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:22px;}
+.card-title{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--rsh-dark-gray);margin-bottom:14px;}
+table.breakdown{width:100%;border-collapse:collapse;font-family:var(--font);font-size:13px;}
+table.breakdown th{text-align:left;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:7px 8px;border-bottom:1.5px solid var(--border-strong);}
+table.breakdown th.r,table.breakdown td.r{text-align:right;}
+table.breakdown td{padding:8px;border-bottom:1px solid var(--border);vertical-align:top;}
+.bd-name{font-weight:600;color:var(--text);}
+.bd-formula{font-size:10.5px;color:var(--muted);margin-top:2px;}
+.bd-val{font-weight:600;color:var(--text);white-space:nowrap;}
+table.breakdown tr.total td{border-top:2px solid var(--rsh-navy);font-weight:800;background:var(--rsh-blue-tint-2);color:var(--rsh-navy);font-size:14px;}
+.svg-wrap{width:100%;}
+.program-svg{width:100%;height:auto;display:block;}
+.viz-caption{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5;}
+.viz-legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:10px;font-size:11px;color:var(--muted);}
+.viz-legend span{display:inline-flex;align-items:center;gap:6px;}
+.viz-legend i{width:11px;height:11px;border-radius:2px;display:inline-block;border:1px solid rgba(0,0,0,.12);}
+.gutcheck{display:flex;align-items:flex-start;gap:10px;font-size:12.5px;padding:10px 13px;border-radius:8px;margin-top:14px;line-height:1.5;}
+.gutcheck.ok{background:#def0ec;color:#0a6d65;}
+.gutcheck.warn{background:#fdeccb;color:#8a5d00;}
+.gutcheck.na{background:var(--surface-2);color:var(--muted);}
+.edu-card{padding:0;overflow:hidden;}
+.edu-card>summary{list-style:none;cursor:pointer;padding:16px 20px;display:flex;align-items:center;gap:12px;background:var(--surface-2);border-bottom:1px solid var(--border);}
+.edu-card>summary::-webkit-details-marker{display:none;}
+.edu-card>summary .es-title{font-size:14px;font-weight:700;color:var(--rsh-navy);}
+.edu-card>summary .es-sub{font-size:11.5px;color:var(--muted);}
+.edu-card>summary .chev{margin-left:auto;transition:transform .2s;color:var(--rsh-blue);font-size:13px;}
+.edu-card[open]>summary .chev{transform:rotate(180deg);}
+.edu-body{padding:18px 20px 20px;}
+.edu-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
+.edu-stat{background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:9px 11px;}
+.edu-stat .lab{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);}
+.edu-stat .val{font-size:13px;font-weight:700;color:var(--rsh-navy);margin-top:2px;}
+table.edu{width:100%;border-collapse:collapse;font-size:12px;}
+table.edu th,table.edu td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.4;}
+table.edu th.r,table.edu td.r{text-align:right;}
+table.edu thead th{background:var(--rsh-navy);color:#fff;font-size:10px;text-transform:uppercase;letter-spacing:.04em;}
+table.edu td.feat{font-weight:700;color:var(--rsh-dark-gray);background:var(--surface-2);}
+tr.sel td{background:var(--rsh-blue-tint-2)!important;}
+.edu-table-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:8px;margin-top:10px;}
+.reference-text{font-size:12.5px;color:var(--rsh-dark-gray);line-height:1.65;}
+.reference-text p{margin-bottom:9px;}
+.notes-list{padding-left:20px;margin-top:8px;}
+.notes-list li{margin-bottom:5px;}
+.footer-disc{background:var(--surface);border-top:1px solid var(--border);padding:14px 30px;font-size:11.5px;color:var(--muted);line-height:1.6;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(16,50,84,.55);z-index:1000;align-items:center;justify-content:center;}
+.overlay.open{display:flex;}
+.modal{background:#fff;border-radius:12px;max-width:760px;width:94%;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.28);}
+.modal-header{background:var(--rsh-navy);color:#fff;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;}
+.modal-header h3{font-size:16px;font-weight:700;}
+.modal-close{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;opacity:.7;}
+.modal-tabs{display:flex;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.modal-tab{flex:1;padding:11px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;background:none;border:none;border-bottom:3px solid transparent;font-family:var(--font);}
+.modal-tab.active{color:var(--rsh-blue);border-bottom-color:var(--rsh-blue);}
+.modal-body{overflow-y:auto;padding:22px;}
+.modal-pane{display:none;}
+.modal-pane.active{display:block;}
+.modal-pane h4{font-size:14px;font-weight:700;color:var(--rsh-navy);margin-bottom:8px;}
+.modal-pane p,.modal-pane li{font-size:13px;color:var(--rsh-dark-gray);line-height:1.65;}
+.modal-pane ul{padding-left:20px;}
+.loading-overlay{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(16,50,84,.94);color:#fff;text-align:center;}
+.loading-panel{max-width:580px;padding:22px 26px;border:1px solid rgba(255,255,255,.25);border-radius:10px;background:rgba(255,255,255,.10);}
+.loading-panel h3{font-size:17px;margin-bottom:7px;}
+.loading-panel p{font-size:13px;color:#d7eaf9;line-height:1.55;}
+@page{size:8.5in 11in;margin:.45in;}
+.print-memo{display:none;}
+@media print{
+  body>*:not(.print-memo){display:none!important;}
+  .print-memo{display:block!important;background:#fff;color:#222;font-family:Arial,sans-serif;}
+  .pm-title{font-size:20px;font-weight:700;color:#103254;margin-bottom:4px;}
+  .pm-meta{font-size:11px;color:#667;margin-bottom:16px;}
+  .pm-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#215eac;margin:18px 0 8px;}
+  .pm-table{width:100%;border-collapse:collapse;font-size:10.5px;}
+  .pm-table th,.pm-table td{border:1px solid #ddd;padding:5px 6px;text-align:left;}
+  .pm-table th{background:#103254;color:#fff;text-transform:uppercase;font-size:9px;}
+  .pm-table td.r,.pm-table th.r{text-align:right;}
+  .pm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .pm-stat{border:1px solid #ddd;padding:8px;}
+  .pm-stat .lab{font-size:8.5px;text-transform:uppercase;color:#667;}
+  .pm-stat .val{font-size:15px;font-weight:700;color:#103254;margin-top:2px;}
+  .pm-note{font-size:9.5px;color:#667;line-height:1.5;margin-top:12px;}
+}
+@media(max-width:1250px){.kpi-row{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:1050px){
+  .grid-2{grid-template-columns:1fr;}
+  .layout{grid-template-columns:1fr;}
+  .sidebar{height:auto;position:static;border-right:none;border-bottom:1px solid var(--border);}
+}
+@media(max-width:760px){
+  .edu-grid{grid-template-columns:1fr 1fr;}
+  .header-center{display:none;}
+}
+@media(max-width:520px){.kpi-row,.edu-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="gradient-rule"></div>
+<header class="app-header">
+  <div class="brand">
+    <svg width="116" height="34" viewBox="0 0 116 34" aria-label="RS&H">
+      <text x="0" y="25" font-family="'Segoe UI',sans-serif" font-size="26" font-weight="800" fill="#ffffff" font-style="italic" letter-spacing="-0.5">RS&amp;H</text>
+      <line x1="2" y1="31" x2="86" y2="31" stroke="#85c7ee" stroke-width="2.4"/>
+      <line x1="86" y1="31" x2="112" y2="17.2" stroke="#0ba89c" stroke-width="2.4"/>
+    </svg>
+    <div class="menu-wrap">
+      <button class="menu-btn" type="button" id="exportMenuBtn" aria-label="Open export menu" aria-expanded="false">
+        <span class="menu-lines" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
+      <div class="export-menu" id="exportMenu">
+        <div class="export-menu-title">Export Deliverables</div>
+        <button type="button" id="menuExportCsv"><span class="menu-main">Program CSV</span><span class="menu-sub">Space program by line item</span></button>
+        <button type="button" id="menuExportPdf"><span class="menu-main">PDF Memo</span><span class="menu-sub">Letter-size programming memorandum</span></button>
+        <button type="button" id="menuExportScenario"><span class="menu-main">Scenario JSON</span><span class="menu-sub">Save the current project inputs</span></button>
+        <button type="button" id="menuExportCriteria"><span class="menu-main">Criteria JSON</span><span class="menu-sub">Combined source-criteria package</span></button>
+      </div>
+    </div>
+  </div>
+  <div class="header-center">
+    <h1>RS&amp;H Federal Facilities Planning &amp; Innovation</h1>
+    <p>A/HMU Organizational Maintenance Shop — Space Programming Dashboard</p>
+  </div>
+  <div class="header-right">
+    <div class="unit-pill" role="group" aria-label="Display units">
+      <button id="unitFt" class="active" type="button">ft²</button>
+      <button id="unitM" type="button">m²</button>
+    </div>
+    <button class="info-btn" type="button" title="Criteria source reference" id="openInfoBtn">&#9432;</button>
+  </div>
+</header>
+<section class="project-bar">
+  <div class="project-inner">
+    <div class="project-details">
+      <span class="project-name" id="facilityName">Loading facility criteria…</span>
+      <span class="meta-chip" id="facChip">FAC —</span>
+      <span class="meta-chip green" id="catcodeChip">CATCODE —</span>
+    </div>
+    <input class="project-input" type="text" id="projectName" placeholder="Project name">
+    <input class="project-input" type="text" id="installationName" placeholder="Installation / Base">
+  </div>
+</section>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sb-section">
+      <div class="panel-label">Mission (Table 1.1)</div>
+      <div class="field">
+        <div class="field-label">Squadron mission <span class="field-hint">base gross area</span></div>
+        <select id="missionSelect"></select>
+      </div>
+      <div class="field-hint" id="missionNoteHint"></div>
+    </div>
+
+    <div class="sb-section">
+      <div class="panel-label">Adjustable Add-Ons</div>
+
+      <div class="field">
+        <div class="field-label">Pararescue personnel <span class="field-hint" id="paraRate">+200 ft² ea</span></div>
+        <input type="number" id="paraCount" min="0" step="1" value="0">
+        <div class="field-hint">Table 1.1, Note 1 — additional area per pararescue person.</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Severe winter storage <span class="field-hint">para 1.3.3</span></div>
+        <select id="winterSelect"></select>
+        <div class="field-hint">Covered storage of non-powered support equipment.</div>
+      </div>
+
+      <label class="toggle-line"><input type="checkbox" id="heloToggle">
+        <span>Helicopter weapons-mission facility
+          <span class="toggle-sub">para 1.3.2 — adds General Purpose Maintenance components</span>
+        </span>
+      </label>
+      <div class="comp-list" id="heloComps" style="display:none;"></div>
+
+      <div class="field" style="margin-top:14px;">
+        <div class="field-label">Arm/disarm pad annexes <span class="field-hint" id="annexRate">+240 ft² ea</span></div>
+        <input type="number" id="annexCount" min="0" step="1" value="0">
+        <div class="field-hint">para 1.3.4 — loading-shop annex per pad (CATCODE 116661).</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <button class="small-btn" type="button" id="resetBtn">Reset all add-ons</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="results-bar">
+      <div>
+        <h2>A/HMU Organizational Maintenance Shop — Space Program</h2>
+        <div class="results-meta" id="resultsMeta">—</div>
+      </div>
+    </div>
+    <div class="kpi-row" id="kpiRow"></div>
+    <div class="grid-2">
+      <div>
+        <div class="card">
+          <div class="card-title">Space Program Breakdown</div>
+          <div class="edu-table-scroll">
+            <table class="breakdown" id="breakdownTable"></table>
+          </div>
+          <div id="gutcheck"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title">Gross Area Build-Up</div>
+          <div class="svg-wrap" id="svgWrap"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Table 1.1 — All Missions</div>
+          <div class="edu-table-scroll">
+            <table class="edu" id="missionTable"></table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <details class="card edu-card" open>
+      <summary>
+        <span>
+          <div class="es-title">CATCODE 211154 — Criteria Reference</div>
+          <div class="es-sub">Paragraphs 1.1–1.5 · Table 1.1 gross areas · Notes 1–7 (verbatim from source)</div>
+        </span>
+        <span class="chev">▼</span>
+      </summary>
+      <div class="edu-body" id="referenceBody"></div>
+    </details>
+    <div class="footer-disc" id="footerSource"></div>
+  </main>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Planning Criteria Source Reference</h3>
+      <button class="modal-close" type="button" id="closeInfoBtn">×</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" type="button" data-tab="0">Paragraphs 1.1–1.5</button>
+      <button class="modal-tab" type="button" data-tab="1">Add-On Rules</button>
+      <button class="modal-tab" type="button" data-tab="2">Notes &amp; References</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-pane active" id="modalFacility"></div>
+      <div class="modal-pane" id="modalAddons"></div>
+      <div class="modal-pane" id="modalNotes"></div>
+    </div>
+  </div>
+</div>
+<div class="print-memo" id="printMemo"></div>
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-panel">
+    <h3 id="loadingTitle">Loading planning criteria…</h3>
+    <p id="loadingMessage">Loading facility, Table 1.1 missions, add-on rules, requirements and manifest data.</p>
+  </div>
+</div>
+
+<!-- ============================================================
+     CALCULATION ENGINE (inlined). Criteria data is loaded from
+     the separate ./data/*.json files at runtime.
+     ============================================================ -->
+<script>
+"use strict";
+let FACILITY={}, MISSIONS={}, ADDONS={}, REQUIREMENTS={}, SOURCE={}, MANIFEST={};
+const state={
+  unit:"ft2", projectName:"", installationName:"",
+  missionIndex:0, paraCount:0, winter:"none", helo:false,
+  heloComps:{}, annexCount:0
+};
+let RESULTS=null;
+
+/* ---------- helpers ---------- */
+function escapeHtml(v){ return String(v ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
+function csvCell(v){ let s=String(v ?? ""); if(/^[=+\-@]/.test(s)) s="'"+s; return '"'+s.replaceAll('"','""')+'"'; }
+function fmt(v,digits=0){ const n=Number(v)||0; return n.toLocaleString(undefined,{maximumFractionDigits:digits,minimumFractionDigits:digits}); }
+function uKey(){ return state.unit; }
+function uLabel(){ return state.unit==="m2"?"m²":"ft²"; }
+function areaOf(obj){ return Number(obj[state.unit])||0; }
+async function fetchJson(path){ const r=await fetch(path,{headers:{"Accept":"application/json"}}); if(!r.ok) throw new Error(`${path} returned HTTP ${r.status}`); return r.json(); }
+function validateDatasets(){
+  const e=[];
+  if(!FACILITY||!FACILITY.catcode) e.push("facility.json");
+  if(!MISSIONS||!Array.isArray(MISSIONS.rows)) e.push("missions.json");
+  if(!ADDONS||!ADDONS.pararescue) e.push("addons.json");
+  if(!REQUIREMENTS||!Array.isArray(REQUIREMENTS.sections)) e.push("requirements.json");
+  if(!SOURCE||typeof SOURCE!=="object") e.push("source.json");
+  if(!MANIFEST||!Array.isArray(MANIFEST.files)) e.push("manifest.json");
+  if(e.length) throw new Error(`Unexpected JSON structure: ${e.join(", ")}`);
+}
+async function loadDashboardData(){
+  try{
+    [FACILITY,MISSIONS,ADDONS,REQUIREMENTS,SOURCE,MANIFEST]=await Promise.all([
+      fetchJson("./data/facility.json"), fetchJson("./data/missions.json"),
+      fetchJson("./data/addons.json"), fetchJson("./data/requirements.json"),
+      fetchJson("./data/source.json"), fetchJson("./data/manifest.json")
+    ]);
+    validateDatasets(); initStateFromData(); bindStaticEvents(); renderAll();
+    document.getElementById("loadingOverlay").remove();
+  }catch(err){
+    console.error("Dashboard dataset loading failed:",err);
+    document.getElementById("loadingTitle").textContent="Dashboard data could not be loaded";
+    const localNote=location.protocol==="file:" ? " This page is being opened as a local file; run it through GitHub Pages or another web server." : "";
+    document.getElementById("loadingMessage").textContent=`Confirm that index.html and the complete data folder are deployed together.${localNote}`;
+  }
+}
+function initStateFromData(){
+  ADDONS.helicopterWeapons.components.forEach(c=>{ state.heloComps[c.key]=true; });
+  document.getElementById("facilityName").textContent=FACILITY.title||"A/HMU";
+  document.getElementById("facChip").textContent=`FAC ${FACILITY.fac||"—"}`;
+  document.getElementById("catcodeChip").textContent=`CATCODE ${FACILITY.catcode||"—"}`;
+  // mission dropdown
+  const ms=document.getElementById("missionSelect");
+  ms.innerHTML=MISSIONS.rows.map((r,i)=>`<option value="${i}">${escapeHtml(r.mission)}</option>`).join("");
+  // winter dropdown
+  const ws=document.getElementById("winterSelect");
+  ws.innerHTML=ADDONS.severeWinter.options.map(o=>`<option value="${o.key}">${escapeHtml(o.label)}</option>`).join("");
+  // helo component checkboxes
+  const hc=document.getElementById("heloComps");
+  hc.innerHTML=ADDONS.helicopterWeapons.components.map(c=>`
+    <label class="comp-line"><input type="checkbox" data-key="${c.key}" checked>
+      <span>${escapeHtml(c.label)}</span>
+      <span class="cval" data-cval="${c.key}"></span>
+    </label>`).join("");
+}
+function bindStaticEvents(){
+  document.getElementById("unitFt").addEventListener("click",()=>setUnit("ft2"));
+  document.getElementById("unitM").addEventListener("click",()=>setUnit("m2"));
+  document.getElementById("projectName").addEventListener("input",e=>{state.projectName=e.target.value; renderResultsMeta();});
+  document.getElementById("installationName").addEventListener("input",e=>{state.installationName=e.target.value; renderResultsMeta();});
+  document.getElementById("missionSelect").addEventListener("change",e=>{state.missionIndex=Number(e.target.value); recompute();});
+  document.getElementById("paraCount").addEventListener("input",e=>{state.paraCount=Math.max(0,Math.floor(Number(e.target.value)||0)); recompute();});
+  document.getElementById("winterSelect").addEventListener("change",e=>{state.winter=e.target.value; recompute();});
+  document.getElementById("heloToggle").addEventListener("change",e=>{
+    state.helo=e.target.checked;
+    document.getElementById("heloComps").style.display=state.helo?"":"none";
+    recompute();
+  });
+  document.getElementById("heloComps").addEventListener("change",e=>{
+    const k=e.target.dataset.key; if(k){ state.heloComps[k]=e.target.checked; recompute(); }
+  });
+  document.getElementById("annexCount").addEventListener("input",e=>{state.annexCount=Math.max(0,Math.floor(Number(e.target.value)||0)); recompute();});
+  document.getElementById("resetBtn").addEventListener("click",resetAddons);
+  document.getElementById("openInfoBtn").addEventListener("click",openModal);
+  document.getElementById("closeInfoBtn").addEventListener("click",closeModal);
+  document.getElementById("overlay").addEventListener("click",e=>{ if(e.target===e.currentTarget) closeModal(); });
+  document.querySelectorAll(".modal-tab").forEach((b,i)=>b.addEventListener("click",()=>setModalTab(i)));
+  const emBtn=document.getElementById("exportMenuBtn"), em=document.getElementById("exportMenu");
+  emBtn.addEventListener("click",e=>{ e.stopPropagation(); const o=em.classList.toggle("open"); emBtn.setAttribute("aria-expanded",String(o)); });
+  document.addEventListener("click",e=>{ if(!em.contains(e.target)&&e.target!==emBtn){ em.classList.remove("open"); emBtn.setAttribute("aria-expanded","false"); } });
+  document.getElementById("menuExportCsv").addEventListener("click",()=>{em.classList.remove("open"); exportCSV();});
+  document.getElementById("menuExportPdf").addEventListener("click",()=>{em.classList.remove("open"); exportPDF();});
+  document.getElementById("menuExportScenario").addEventListener("click",()=>{em.classList.remove("open"); exportScenario();});
+  document.getElementById("menuExportCriteria").addEventListener("click",()=>{em.classList.remove("open"); exportCriteria();});
+}
+function resetAddons(){
+  state.paraCount=0; state.winter="none"; state.helo=false; state.annexCount=0;
+  ADDONS.helicopterWeapons.components.forEach(c=>{ state.heloComps[c.key]=true; });
+  document.getElementById("paraCount").value=0;
+  document.getElementById("annexCount").value=0;
+  document.getElementById("winterSelect").value="none";
+  document.getElementById("heloToggle").checked=false;
+  document.getElementById("heloComps").style.display="none";
+  document.querySelectorAll('#heloComps input[type="checkbox"]').forEach(cb=>cb.checked=true);
+  recompute();
+}
+function setUnit(unit){
+  if(unit===state.unit) return;
+  state.unit=unit;
+  document.getElementById("unitFt").classList.toggle("active",unit==="ft2");
+  document.getElementById("unitM").classList.toggle("active",unit==="m2");
+  renderAll();
+}
+
+/* ---------- compute ---------- */
+function compute(){
+  const mission=MISSIONS.rows[state.missionIndex];
+  const base=areaOf(mission);
+  const items=[{ key:"base", label:mission.mission, detail:"Table 1.1 base gross area", qty:1, each:base, area:base, group:"base" }];
+
+  // pararescue (Note 1)
+  const pr=ADDONS.pararescue, prEach=areaOf(pr);
+  if(state.paraCount>0) items.push({ key:"para", label:pr.label, detail:`${state.paraCount} × ${fmt(prEach)} ${uLabel()} (${pr.ref})`, qty:state.paraCount, each:prEach, area:state.paraCount*prEach, group:"para" });
+
+  // severe winter (1.3.3)
+  const wOpt=ADDONS.severeWinter.options.find(o=>o.key===state.winter);
+  if(wOpt && state.winter!=="none"){ const a=areaOf(wOpt); items.push({ key:"winter", label:`Severe winter — ${wOpt.label}`, detail:ADDONS.severeWinter.ref, qty:1, each:a, area:a, group:"winter" }); }
+
+  // helicopter weapons (1.3.2)
+  let heloArea=0;
+  if(state.helo){
+    ADDONS.helicopterWeapons.components.forEach(c=>{
+      if(state.heloComps[c.key]){ const a=areaOf(c); heloArea+=a; items.push({ key:"helo:"+c.key, label:c.label, detail:ADDONS.helicopterWeapons.ref, qty:1, each:a, area:a, group:"helo" }); }
+    });
+  }
+
+  // arm/disarm annex (1.3.4)
+  const an=ADDONS.armDisarmAnnex, anEach=areaOf(an);
+  if(state.annexCount>0) items.push({ key:"annex", label:an.label, detail:`${state.annexCount} × ${fmt(anEach)} ${uLabel()} (${an.ref})`, qty:state.annexCount, each:anEach, area:state.annexCount*anEach, group:"annex" });
+
+  const total=items.reduce((s,i)=>s+i.area,0);
+  const addonTotal=total-base;
+  const groups={
+    base, para:state.paraCount*prEach,
+    winter:(wOpt&&state.winter!=="none")?areaOf(wOpt):0,
+    helo:heloArea, annex:state.annexCount*anEach
+  };
+  return { mission, base, items, total, addonTotal, groups };
+}
+function recompute(){ RESULTS=compute(); renderResultsMeta(); renderKPIs(); renderBreakdown(); renderViz(); renderMissionTable(); renderStatus(); }
+function renderAll(){
+  // reflect unit in labels
+  document.getElementById("paraRate").textContent=`+${fmt(areaOf(ADDONS.pararescue))} ${uLabel()} ea`;
+  document.getElementById("annexRate").textContent=`+${fmt(areaOf(ADDONS.armDisarmAnnex))} ${uLabel()} ea`;
+  // helo component values
+  ADDONS.helicopterWeapons.components.forEach(c=>{
+    const el=document.querySelector(`[data-cval="${c.key}"]`); if(el) el.textContent=`${fmt(areaOf(c))} ${uLabel()}`;
+  });
+  const m=MISSIONS.rows[state.missionIndex];
+  document.getElementById("missionNoteHint").innerHTML = m.noteRefs && m.noteRefs.length
+    ? `Applies Table 1.1 Note ${m.noteRefs.join(", ")}.` : "";
+  renderReference(); renderModal(); recompute();
+}
+function renderResultsMeta(){
+  const p=[];
+  if(state.projectName.trim()) p.push(state.projectName.trim());
+  if(state.installationName.trim()) p.push(state.installationName.trim());
+  p.push(MISSIONS.rows[state.missionIndex].mission);
+  p.push(`Units: ${uLabel()}`);
+  document.getElementById("resultsMeta").textContent=p.join(" · ");
+}
+function renderKPIs(){
+  const r=RESULTS;
+  document.getElementById("kpiRow").innerHTML=`
+    <div class="kpi"><div class="kpi-label">Base Mission Area</div><div class="kpi-value tnum">${fmt(r.base)}</div><div class="kpi-sub">${uLabel()} · Table 1.1</div></div>
+    <div class="kpi k-green"><div class="kpi-label">Authorized Add-Ons</div><div class="kpi-value tnum">${fmt(r.addonTotal)}</div><div class="kpi-sub">${uLabel()} · notes &amp; §1.3</div></div>
+    <div class="kpi k-navy"><div class="kpi-label">Total Programmed Area</div><div class="kpi-value tnum">${fmt(r.total)}</div><div class="kpi-sub">${uLabel()} gross</div></div>
+    <div class="kpi k-gold"><div class="kpi-label">Line Items</div><div class="kpi-value tnum">${fmt(r.items.length)}</div><div class="kpi-sub">Base + add-on rows</div></div>`;
+}
+function renderBreakdown(){
+  const r=RESULTS;
+  const rows=r.items.map(it=>`
+    <tr>
+      <td><div class="bd-name">${escapeHtml(it.label)}</div><div class="bd-formula">${escapeHtml(it.detail)}</div></td>
+      <td class="r bd-val">${it.group==="base"?"—":fmt(it.qty)}</td>
+      <td class="r bd-val">${it.group==="base"||it.qty===1?"—":fmt(it.each)}</td>
+      <td class="r bd-val">${fmt(it.area)}</td>
+    </tr>`).join("");
+  document.getElementById("breakdownTable").innerHTML=`
+    <thead><tr><th>Line Item</th><th class="r">Qty</th><th class="r">Each (${uLabel()})</th><th class="r">Area (${uLabel()})</th></tr></thead>
+    <tbody>${rows}
+      <tr class="total"><td>TOTAL PROGRAMMED GROSS AREA</td><td class="r">—</td><td class="r">—</td><td class="r">${fmt(r.total)}</td></tr>
+    </tbody>`;
+}
+function renderViz(){
+  const r=RESULTS; const wrap=document.getElementById("svgWrap");
+  const segs=[
+    {label:"Base mission", val:r.groups.base,   color:"#215eac"},
+    {label:"Pararescue",   val:r.groups.para,   color:"#0ba89c"},
+    {label:"Severe winter",val:r.groups.winter, color:"#5aa0d6"},
+    {label:"Helo weapons", val:r.groups.helo,   color:"#c8930a"},
+    {label:"Arm/disarm",   val:r.groups.annex,  color:"#a1225d"}
+  ].filter(s=>s.val>0);
+  const total=r.total||1;
+  const W=900, barY=30, barH=54, x0=20, barW=W-2*x0;
+  let x=x0, bars="", legend="";
+  segs.forEach(s=>{
+    const w=Math.max(2, s.val/total*barW);
+    bars+=`<rect x="${x}" y="${barY}" width="${w}" height="${barH}" fill="${s.color}"/>`;
+    if(w>52) bars+=`<text x="${x+w/2}" y="${barY+barH/2+5}" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#fff">${fmt(s.val)}</text>`;
+    x+=w;
+    legend+=`<span><i style="background:${s.color}"></i>${escapeHtml(s.label)} · ${fmt(s.val)} ${uLabel()} (${fmt(s.val/total*100,0)}%)</span>`;
+  });
+  const svg=`<svg class="program-svg" viewBox="0 0 ${W} ${barY+barH+30}" role="img" aria-label="Gross area build-up">
+      <rect x="${x0}" y="${barY}" width="${barW}" height="${barH}" rx="5" fill="#eef1f5" stroke="#d9dfe8"/>
+      ${bars}
+      <rect x="${x0}" y="${barY}" width="${barW}" height="${barH}" rx="5" fill="none" stroke="#c2cad7"/>
+      <text x="${x0}" y="${barY-10}" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#103254">Total ${fmt(total)} ${uLabel()}</text>
+    </svg>`;
+  wrap.innerHTML=svg+`<div class="viz-legend">${legend}</div>
+    <div class="viz-caption">Stacked gross-area build-up: the Table 1.1 base mission area plus each authorized add-on. Segment widths are proportional to their share of the total programmed area.</div>`;
+}
+function renderMissionTable(){
+  const rows=MISSIONS.rows.map((r,i)=>`
+    <tr class="${i===state.missionIndex?"sel":""}">
+      <td class="feat">${escapeHtml(r.mission)}${r.noteRefs&&r.noteRefs.length?` <sup>${r.noteRefs.join(",")}</sup>`:""}</td>
+      <td class="r">${fmt(r.m2)}</td><td class="r">${fmt(r.ft2)}</td>
+    </tr>`).join("");
+  document.getElementById("missionTable").innerHTML=`
+    <thead><tr><th>Mission</th><th class="r">m²</th><th class="r">ft²</th></tr></thead>
+    <tbody>${rows}</tbody>`;
+}
+function renderStatus(){
+  const r=RESULTS; const el=document.getElementById("gutcheck");
+  const m=MISSIONS.rows[state.missionIndex];
+  const csarDouble = state.helo && m.noteRefs && m.noteRefs.includes(5);
+  if(csarDouble){
+    el.innerHTML=`<div class="gutcheck warn"><strong>Possible double-count:</strong>&nbsp;Table 1.1 Note 5 states this mission's base area already includes the 1,301 m² (14,000 ft²) gun-vault/engine/avionics requirement of §1.3.2. Adding the helicopter weapons facility may double-count — verify with MAJCOM.</div>`;
+    return;
+  }
+  el.innerHTML=`<div class="gutcheck ok"><strong>Programmed:</strong>&nbsp;${fmt(r.base)} ${uLabel()} base + ${fmt(r.addonTotal)} ${uLabel()} add-ons = <strong>${fmt(r.total)} ${uLabel()}</strong>. Base areas are per Table 1.1; add-ons per Notes and §1.3. Confirm against the source and MAJCOM guidance.</div>`;
+}
+function sectionsHtml(){
+  return REQUIREMENTS.sections.map(sx=>{
+    const head=sx.title?`<strong>${escapeHtml(sx.number)}. ${escapeHtml(sx.title)}.</strong> `:`<strong>${escapeHtml(sx.number)}.</strong> `;
+    return sx.text?`<p>${head}${escapeHtml(sx.text)}</p>`:`<p style="margin-top:6px;">${head}</p>`;
+  }).join("");
+}
+function renderReference(){
+  const mRows=MISSIONS.rows.map(r=>`<tr><td class="feat">${escapeHtml(r.mission)}${r.noteRefs&&r.noteRefs.length?` <sup>${r.noteRefs.join(",")}</sup>`:""}</td><td class="r">${fmt(r.m2)}</td><td class="r">${fmt(r.ft2)}</td></tr>`).join("");
+  const notes=MISSIONS.notes.map(n=>`<li><strong>Note ${escapeHtml(n.number)}.</strong> ${escapeHtml(n.text)}</li>`).join("");
+  document.getElementById("referenceBody").innerHTML=`
+    <div class="edu-grid">
+      <div class="edu-stat"><div class="lab">Facility</div><div class="val">${escapeHtml(FACILITY.subtitle||FACILITY.title)}</div></div>
+      <div class="edu-stat"><div class="lab">FAC</div><div class="val">${escapeHtml(FACILITY.fac)}</div></div>
+      <div class="edu-stat"><div class="lab">CATCODE</div><div class="val">${escapeHtml(FACILITY.catcode)}</div></div>
+      <div class="edu-stat"><div class="lab">OPR / OCR</div><div class="val">${escapeHtml(FACILITY.opr)} / ${escapeHtml(FACILITY.ocr)}</div></div>
+    </div>
+    <div class="reference-text">${sectionsHtml()}</div>
+    <div class="card-title" style="margin-top:16px;margin-bottom:8px;">${escapeHtml(MISSIONS.title)}</div>
+    <div class="edu-table-scroll"><table class="edu"><thead><tr><th>Mission</th><th class="r">Gross m²</th><th class="r">Gross ft²</th></tr></thead><tbody>${mRows}</tbody></table></div>
+    <ul class="notes-list reference-text" style="margin-top:10px;">${notes}</ul>`;
+  document.getElementById("footerSource").innerHTML=`<strong>Source:</strong> ${escapeHtml(SOURCE.sourceFile)} · ${escapeHtml(MISSIONS.table)} · ${escapeHtml(MANIFEST.dataset||"")}<br>${escapeHtml(SOURCE.dashboardNote||"")}`;
+}
+function renderModal(){
+  document.getElementById("modalFacility").innerHTML=`
+    <h4>${escapeHtml(FACILITY.title)} — ${escapeHtml(FACILITY.subtitle||"")}</h4>
+    <p><strong>FAC:</strong> ${escapeHtml(FACILITY.fac)} &nbsp; <strong>CATCODE:</strong> ${escapeHtml(FACILITY.catcode)} &nbsp; <strong>OPR:</strong> ${escapeHtml(FACILITY.opr)} &nbsp; <strong>OCR:</strong> ${escapeHtml(FACILITY.ocr)}</p>
+    <div class="reference-text">${sectionsHtml()}</div>`;
+  const a=ADDONS;
+  const heloComps=a.helicopterWeapons.components.map(c=>`<li>${escapeHtml(c.label)} — ${fmt(c.m2)} m² (${fmt(c.ft2)} ft²)</li>`).join("");
+  const winterOpts=a.severeWinter.options.filter(o=>o.key!=="none").map(o=>`<li>${escapeHtml(o.label)} — ${fmt(o.m2)} m² (${fmt(o.ft2)} ft²)</li>`).join("");
+  document.getElementById("modalAddons").innerHTML=`
+    <h4>Pararescue (Table 1.1, Note 1)</h4><p>${escapeHtml(a.pararescue.description)}</p>
+    <h4 style="margin-top:12px;">Severe Winter (${escapeHtml(a.severeWinter.ref)})</h4><p>${escapeHtml(a.severeWinter.description)}</p><ul>${winterOpts}</ul>
+    <h4 style="margin-top:12px;">Helicopter Weapons Facility (${escapeHtml(a.helicopterWeapons.ref)})</h4><p>${escapeHtml(a.helicopterWeapons.description)}</p><ul>${heloComps}</ul>
+    <h4 style="margin-top:12px;">Arm/Disarm Annex (${escapeHtml(a.armDisarmAnnex.ref)})</h4><p>${escapeHtml(a.armDisarmAnnex.description)}</p>`;
+  document.getElementById("modalNotes").innerHTML=`
+    <h4>Table 1.1 Notes</h4><ul>${MISSIONS.notes.map(n=>`<li><strong>Note ${escapeHtml(n.number)}.</strong> ${escapeHtml(n.text)}</li>`).join("")}</ul>
+    <h4 style="margin-top:12px;">Referenced Documents</h4><ul>${(SOURCE.referencedDocuments||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul>
+    <h4 style="margin-top:12px;">Points of Contact</h4><ul>${(SOURCE.pointsOfContact||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul>`;
+}
+function openModal(){ setModalTab(0); document.getElementById("overlay").classList.add("open"); }
+function closeModal(){ document.getElementById("overlay").classList.remove("open"); }
+function setModalTab(i){
+  document.querySelectorAll(".modal-tab").forEach((b,j)=>b.classList.toggle("active",j===i));
+  document.querySelectorAll(".modal-pane").forEach((p,j)=>p.classList.toggle("active",j===i));
+}
+
+/* ---------- exports ---------- */
+function downloadBlob(content,type,filename){
+  const blob=new Blob([content],{type}); const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+function safeFilenamePart(v){ return String(v||"AHMU_Program").trim().replace(/[^a-z0-9_-]+/gi,"_").replace(/^_+|_+$/g,"")||"AHMU_Program"; }
+function exportCSV(){
+  if(!RESULTS) return; const r=RESULTS; const lines=[];
+  lines.push([csvCell("RS&H A/HMU Organizational Maintenance Shop — Space Program")].join(","));
+  lines.push([csvCell("Project"),csvCell(state.projectName)].join(","));
+  lines.push([csvCell("Installation / Base"),csvCell(state.installationName)].join(","));
+  lines.push([csvCell("CATCODE"),csvCell(FACILITY.catcode)].join(","));
+  lines.push([csvCell("Mission"),csvCell(r.mission.mission)].join(","));
+  lines.push([csvCell("Units"),csvCell(uLabel())].join(","));
+  lines.push("");
+  lines.push(["Line Item","Detail","Qty","Each","Area"].map(csvCell).join(","));
+  r.items.forEach(it=>lines.push([it.label,it.detail,it.group==="base"?"":it.qty,it.group==="base"||it.qty===1?"":it.each,it.area].map(csvCell).join(",")));
+  lines.push(["TOTAL PROGRAMMED GROSS AREA","","","",r.total].map(csvCell).join(","));
+  downloadBlob(lines.join("\r\n"),"text/csv;charset=utf-8",`${safeFilenamePart(state.projectName)}_ahmu_program.csv`);
+}
+function scenarioObject(){ return {schemaVersion:1,dashboard:"A/HMU Organizational Maintenance Shop Space Dashboard",source:{catcode:FACILITY.catcode,fac:FACILITY.fac,dataset:MANIFEST.dataset,sourceFile:SOURCE.sourceFile},state:JSON.parse(JSON.stringify(state))}; }
+function exportScenario(){ downloadBlob(JSON.stringify(scenarioObject(),null,2),"application/json;charset=utf-8",`${safeFilenamePart(state.projectName)}_scenario.json`); }
+function exportCriteria(){ const combined={facility:FACILITY,missions:MISSIONS,addons:ADDONS,requirements:REQUIREMENTS,source:SOURCE,manifest:MANIFEST}; downloadBlob(JSON.stringify(combined,null,2),"application/json;charset=utf-8",`CATCODE_${FACILITY.catcode||"criteria"}_criteria.json`); }
+function buildPrintMemo(){
+  if(!RESULTS) return; const r=RESULTS;
+  const meta=[state.projectName||"Unnamed Project",state.installationName||"Installation not entered",r.mission.mission,`CATCODE ${FACILITY.catcode}`].join(" · ");
+  const rows=r.items.map(it=>`<tr><td>${escapeHtml(it.label)}</td><td>${escapeHtml(it.detail)}</td><td class="r">${it.group==="base"?"—":fmt(it.qty)}</td><td class="r">${fmt(it.area)}</td></tr>`).join("");
+  const mRows=MISSIONS.rows.map(x=>`<tr><td>${escapeHtml(x.mission)}</td><td class="r">${fmt(x.m2)}</td><td class="r">${fmt(x.ft2)}</td></tr>`).join("");
+  const notes=MISSIONS.notes.map(n=>`<li><strong>Note ${escapeHtml(n.number)}.</strong> ${escapeHtml(n.text)}</li>`).join("");
+  document.getElementById("printMemo").innerHTML=`
+    <div class="pm-title">RS&amp;H A/HMU Organizational Maintenance Shop — Space Program</div>
+    <div class="pm-meta">${escapeHtml(meta)} · Units ${uLabel()}</div>
+    <div class="pm-grid">
+      <div class="pm-stat"><div class="lab">Base Mission Area</div><div class="val">${fmt(r.base)} ${uLabel()}</div></div>
+      <div class="pm-stat"><div class="lab">Authorized Add-Ons</div><div class="val">${fmt(r.addonTotal)} ${uLabel()}</div></div>
+      <div class="pm-stat"><div class="lab">Total Programmed</div><div class="val">${fmt(r.total)} ${uLabel()}</div></div>
+      <div class="pm-stat"><div class="lab">Line Items</div><div class="val">${fmt(r.items.length)}</div></div>
+    </div>
+    <div class="pm-section-title">Space Program Breakdown</div>
+    <table class="pm-table"><thead><tr><th>Line Item</th><th>Detail</th><th class="r">Qty</th><th class="r">Area (${uLabel()})</th></tr></thead>
+      <tbody>${rows}<tr><td colspan="3"><strong>TOTAL PROGRAMMED GROSS AREA</strong></td><td class="r"><strong>${fmt(r.total)}</strong></td></tr></tbody></table>
+    <div class="pm-section-title">Table 1.1 — All Missions</div>
+    <table class="pm-table"><thead><tr><th>Mission</th><th class="r">m²</th><th class="r">ft²</th></tr></thead><tbody>${mRows}</tbody></table>
+    <div class="pm-section-title">Table 1.1 Notes</div>
+    <ol class="pm-note" style="padding-left:18px;">${notes}</ol>
+    <div class="pm-note">Source: ${escapeHtml(SOURCE.sourceFile)}. Values as printed in the source; confirm against the current document and MAJCOM guidance.</div>`;
+}
+function exportPDF(){ buildPrintMemo(); requestAnimationFrame(()=>window.print()); }
+
+window.addEventListener("DOMContentLoaded",loadDashboardData);
+</script>
+</body>
+</html>
