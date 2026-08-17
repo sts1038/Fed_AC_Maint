@@ -1,0 +1,21 @@
+{
+  "sourceFile": "211154_Shop_Aircraft_Maint_Organizational.pdf",
+  "facility": "Shop, Aircraft Maintenance, Organizational (A/HMU)",
+  "fac": "2112",
+  "catcode": "211154",
+  "opr": "AF/A4L",
+  "ocr": "AF/A4O-A",
+  "referencedDocuments": [
+    "UFC 3-260-01 (airfield criteria / waiver requests)",
+    "AFMAN 91-201 (Q-D standards for hardened facilities)",
+    "Chapter 6 of this Manual (administrative space standards)",
+    "CATCODE 116661 (arm/disarm pads)"
+  ],
+  "pointsOfContact": [
+    "MAJCOM/A4/A7 to AF/A4O-A (unlisted missions, A/HMU types, additional space)",
+    "MAJCOM and AF/A3O-A (criteria development, Note 2)",
+    "AETC (training-squadron gross area, Note 3)",
+    "MAJCOM (individual analysis validation, Note 4)"
+  ],
+  "dashboardNote": "This dashboard reproduces the content of the source PDF (CATCODE 211154) verbatim for planning use. It adds no criteria beyond what the source states. Base gross areas come directly from Table 1.1; the adjustable add-ons come from Table 1.1 Note 1 and paragraphs 1.3.2, 1.3.3, and 1.3.4. Both m2 and ft2 values are taken as printed in the source (not converted). Note: for the CSAR Helicopter Unit, Table 1.1 Note 5 states its area already includes the 1,301 m2 (14,000 ft2) gun-vault/engine/avionics requirement of paragraph 1.3.2 — enabling the helicopter weapons add-on for that mission may double-count. Confirm all results against the current source document before use."
+}
